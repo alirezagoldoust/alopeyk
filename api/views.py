@@ -18,6 +18,7 @@ def is_tehran(location):
         return True
     return False
 
+
 def find_duration(origin, destination):
     # This view takes origin and destination and returns the duration in seconds
     url = f'https://api.neshan.org/v4/direction?origin={origin[0]},{origin[1]}&destination={destination[0]},{destination[1]}&type=motorcycle'
@@ -32,6 +33,12 @@ def is_holyday():
     return requests.get(url).json()['is_holiday']
 
 
+def calculate_cost(duration):
+    cost_per_hour = 200000
+    cost = (duration / 3600) * cost_per_hour
+    cost = cost * 1.02 if is_holyday() else cost
+    return int(cost)
+
 
 class Price(APIView):
     # This view calculate duration from origin to destination
@@ -45,10 +52,7 @@ class Price(APIView):
         if not is_tehran(origin) or not is_tehran(destination):
             return Response('The origin or destination is not in Tehran!')
         duration = find_duration(origin, destination)
-        cost_per_hour = 200000
-        cost = (duration / 3600) * cost_per_hour
-        cost = cost * 1.02 if is_holyday() else cost
-        return Response('Ok')
-
+        cost = calculate_cost(duration)
+        return Response({'price of peyk (in tooman)':cost})
 
 
