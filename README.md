@@ -1,2 +1,5 @@
 # Welcome to Alopeyk documentation
-this project is API of [Alopeyk.com](https://alopeyk.com/) website
+This project is API of [Alopeyk.com](https://alopeyk.com/) website
+# How to use:
+## Calculating the duration and cost from an origin to destination
+`/cost/origin=lat,long&destination=lat,long
