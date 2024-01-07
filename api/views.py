@@ -1,10 +1,14 @@
 from django.shortcuts import render
-from django.http import HttpResponse
-from rest_framework import generics
+from django.contrib.auth.models import User, Group
+from rest_framework import generics, status
 from rest_framework.views import APIView
-# from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+from rest_framework.permissions import IsAuthenticated
+from .serializer import UserSerializer, GroupSerializer
 from .models import ApiKey
+from .permissions import IsDriver
 import requests
 import datetime
 
@@ -39,8 +43,9 @@ def calculate_cost(duration):
     cost = cost * 1.02 if is_holyday() else cost
     return int(cost)
 
-
 class Price(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     # This view calculate duration from origin to destination
     def get(self, request):
         # Getting latitude and longitude from query prameters
@@ -53,6 +58,58 @@ class Price(APIView):
             return Response('The origin or destination is not in Tehran!')
         duration = find_duration(origin, destination)
         cost = calculate_cost(duration)
-        return Response({'price of peyk (in tooman)':cost})
+        return Response({'price':cost})
 
+
+class Signup(APIView):
+    # This view will perform signup
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+
+            # updating saved raw password to hashed password
+            user = User.objects.get(username=request.data['username'])
+            user.set_password(user.password)
+            user.save()
+
+            # generating token
+            access_token = str(AccessToken.for_user(user))
+            refresh_token = str(RefreshToken.for_user(user))
+
+            # returning response
+            return Response({
+                'message': 'User successfully created',
+                'access token':access_token, 
+                'refresh token':refresh_token, 
+                'user': serializer.data})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class Login(APIView):
+
+    # This view will perform login, it takes username and password and returns the token if it was correct
+    def post(self, request):
+
+        # Checking user existance
+        try:
+            user = User.objects.get(username=request.data['username'])
+        except:
+            return Response("username does not exist", status=status.HTTP_404_NOT_FOUND)
+            
+        # Checking password
+        if not user.check_password(request.data['password']):
+            return Response("wrong password", status=status.HTTP_400_BAD_REQUEST)
+
+        # Generating token
+        access_token = str(AccessToken.for_user(user))
+        refresh_token = str(RefreshToken.for_user(user))
+        return Response({'message': 'Successfully logged in', 
+                         'access token':access_token, 
+                         'refresh token':refresh_token})
+
+class GroupsList(generics.ListAPIView):
+    # returns the name and id of all groups of users
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
 
