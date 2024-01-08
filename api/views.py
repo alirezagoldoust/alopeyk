@@ -3,8 +3,7 @@ from django.contrib.auth.models import User, Group
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from .serializer import UserSerializer, GroupSerializer
 from .models import ApiKey
@@ -44,8 +43,9 @@ def calculate_cost(duration):
     return int(cost)
 
 class Price(APIView):
-    authentication_classes = [JWTAuthentication]
+    # authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
     # This view calculate duration from origin to destination
     def get(self, request):
         # Getting latitude and longitude from query prameters
@@ -74,39 +74,18 @@ class Signup(APIView):
             user.save()
 
             # generating token
-            access_token = str(AccessToken.for_user(user))
-            refresh_token = str(RefreshToken.for_user(user))
+            refresh_token = RefreshToken.for_user(user)
+            RefreshToken.set_exp(refresh_token, from_time=datetime.datetime.now(), 
+                                lifetime=datetime.timedelta(days=15))
 
             # returning response
             return Response({
                 'message': 'User successfully created',
-                'access token':access_token, 
-                'refresh token':refresh_token, 
+                'access token':str(refresh_token.access_token),
+                'refresh token':str(refresh_token),
                 'user': serializer.data})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-class Login(APIView):
-
-    # This view will perform login, it takes username and password and returns the token if it was correct
-    def post(self, request):
-
-        # Checking user existance
-        try:
-            user = User.objects.get(username=request.data['username'])
-        except:
-            return Response("username does not exist", status=status.HTTP_404_NOT_FOUND)
-            
-        # Checking password
-        if not user.check_password(request.data['password']):
-            return Response("wrong password", status=status.HTTP_400_BAD_REQUEST)
-
-        # Generating token
-        access_token = str(AccessToken.for_user(user))
-        refresh_token = str(RefreshToken.for_user(user))
-        return Response({'message': 'Successfully logged in', 
-                         'access token':access_token, 
-                         'refresh token':refresh_token})
 
 class GroupsList(generics.ListAPIView):
     # returns the name and id of all groups of users
