@@ -40,7 +40,7 @@ api/token/refresh
 api/token/verify
 ```
 ### Calculating the duration and cost from an origin to destination
-<br>It takes lat, long for both origin and destination in query prams of url, and returns duration in seconds and cost in tooman. note that this request needs authentication
+<br>It takes lat, long for both origin and destination in query prams of url, and returns duration time and cost in tooman. note that this request needs authentication
 ```
 api/cost/origin=lat,long&destination=lat,long
 ```
