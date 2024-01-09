@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
-from .serializer import UserSerializer, GroupSerializer
+from .serializer import UserSerializer, GroupSerializer, ProfileSerializer
 from .models import ApiKey
 from .permissions import IsDriver
 import requests
@@ -64,14 +64,25 @@ class Price(APIView):
 class Signup(APIView):
     # This view will perform signup
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        data = request.data
+        serializer = UserSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            if len(data['groups']) > 1:
+                return Response('The user should belong to one group!')
+            user = serializer.save()
 
             # updating saved raw password to hashed password
-            user = User.objects.get(username=request.data['username'])
             user.set_password(user.password)
             user.save()
+
+            # making profile for user
+            data['user'] = user.id
+            serializer = ProfileSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                user.delete()
+                return Response(serializer.errors)
 
             # generating token
             refresh_token = RefreshToken.for_user(user)
@@ -82,8 +93,7 @@ class Signup(APIView):
             return Response({
                 'message': 'User successfully created',
                 'access token':str(refresh_token.access_token),
-                'refresh token':str(refresh_token),
-                'user': serializer.data})
+                'refresh token':str(refresh_token)})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

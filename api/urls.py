@@ -7,6 +7,6 @@ urlpatterns=[
     path('signup/', Signup.as_view()),
     path('groups/', GroupsList.as_view()),
     path('token/verify/', TokenVerifyView.as_view()),
-    path('token/', TokenObtainPairView.as_view()),
+    path('login/', TokenObtainPairView.as_view()),
     path('token/refresh/', TokenRefreshView.as_view()),
 ]
