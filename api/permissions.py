@@ -7,3 +7,7 @@ class IsDriver(BasePermission):
 class IsCustomer(BasePermission):
     def has_permission(self, request, view):
         return bool(request.user and request.user.groups.all()[0].name == 'Customer')
+    
+class IsCustomerOrDriver(BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.groups.all()[0].name in ['Customer', 'Driver'])

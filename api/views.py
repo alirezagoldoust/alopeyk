@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from .serializer import UserSerializer, GroupSerializer, ProfileSerializer, OrderSerializer
 from .models import ApiKey, Order
-from .permissions import IsDriver, IsCustomer
+from .permissions import IsDriver, IsCustomer, IsCustomerOrDriver
 import requests
 import datetime
 
@@ -108,7 +108,7 @@ class AddOrder(APIView):
     permission_classes = [IsAuthenticated, IsCustomer]
     def post(self, request):
 
-        # Checking data validation
+        # Checking data validation and existance of previous order
         data = request.data
         if len(data.get('origin', [])) != 2:
             return Response({'Origin':'This field should be a list of lat, long'})
@@ -116,6 +116,8 @@ class AddOrder(APIView):
             return Response({'destination':'This field should be a list of lat, long'})
         if not is_tehran(data['origin']) or not is_tehran(data['destination']):
             return Response('The origin or destination is not in Tehran!')
+        if Order.objects.filter(customer=request.user, status__in=['0', '1', '2']).count():
+            return Response('You have an existing order! please finish or cancel it to add new one')
         
         # completing data
         data['cost'] = calculate_cost(data['origin'], data['destination'])
@@ -133,3 +135,27 @@ class AddOrder(APIView):
             return Response('Order succesfully created!', status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors)
+
+
+class CancelOrder(APIView):
+    permission_classes = [IsAuthenticated, IsCustomerOrDriver]
+    def post(self, request):
+        if request.user.groups.all()[0].name == 'Customer':
+            try:
+                order = Order.objects.get(customer=request.user, status__in=['0', '1', '2'])
+                order.status = '-1'
+                order.save()
+                return Response("The order successfully canceled")
+            except:
+                return Response("You don't have any active order!")
+        else:
+            try:
+                order = Order.objects.get(driver=request.user, status__in=['0', '1', '2'])
+                order.status = '-2'
+                order.save()
+                return Response("The order successfully canceled")
+            except:
+                return Response("You don't have any active order!")
+
+
+   

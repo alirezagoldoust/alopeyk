@@ -29,10 +29,9 @@ class Order(models.Model):
     cost = models.PositiveIntegerField()
     duration = models.DurationField()
     status = models.CharField(max_length=20, choices=[('0','initial'), 
-                                                      ('1', 'confirmed'), 
-                                                      ('2', 'driver accepted'),
-                                                      ('3', 'driver arrived to origin'),
-                                                      ('4', 'delivered'),
+                                                      ('1', 'driver accepted'),
+                                                      ('2', 'driver arrived to origin'),
+                                                      ('3', 'delivered'),
                                                       ('-1', 'canceled from user'),
                                                       ('-2', 'canceled from driver')], default='0')
     posting_time = models.DateTimeField(auto_now_add=True)
