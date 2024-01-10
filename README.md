@@ -50,7 +50,7 @@ Both the origin and destination should be in Tehran, example:
 http://127.0.0.1:8000/api/cost/?origin=35.75721789501081,2051.40967669493569&destination=35.746756453846,2051.37487729402636
 ```
 ### Adding order
-this request requires Athentication, and the user should be a customer
+this request requires Athentication, and the user should be a customer. Each user can have only one order at the time.
 ```
 api/addorder
 body:
