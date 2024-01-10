@@ -1,5 +1,6 @@
 # Welcome to Alopeyk documentation
 This project is API of [Alopeyk.com](https://alopeyk.com/) website
+please turn off your VPN befor use!
 ## How to use:
 ### Creating account
 you should give a username, password, group_id in requeset body, then it returns a token
@@ -48,3 +49,14 @@ Both the origin and destination should be in Tehran, example:
 ```
 http://127.0.0.1:8000/api/cost/?origin=35.75721789501081,2051.40967669493569&destination=35.746756453846,2051.37487729402636
 ```
+### Adding order
+this api requires Athentication, and the user should be a customer
+```
+api/addorder
+body:
+{
+    "origin" : ["35.75019411613506", "51.28322697712252"],
+    "destination" : ["35.73156544666984", "51.381008953539585"]
+}
+```
+description is optional
