@@ -60,3 +60,8 @@ body:
 }
 ```
 description is optional
+### Cancel order
+this request requires Athentication, customers and drivers can cancel their active order.
+```
+api/cancelorder
+```
