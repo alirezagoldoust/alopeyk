@@ -5,9 +5,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
-from .serializer import UserSerializer, GroupSerializer, ProfileSerializer
-from .models import ApiKey
-from .permissions import IsDriver
+from .serializer import UserSerializer, GroupSerializer, ProfileSerializer, OrderSerializer
+from .models import ApiKey, Order
+from .permissions import IsDriver, IsCustomer
 import requests
 import datetime
 
@@ -36,7 +36,8 @@ def is_holyday():
     return requests.get(url).json()['is_holiday']
 
 
-def calculate_cost(duration):
+def calculate_cost(origin, destination):
+    duration = find_duration(origin, destination)
     cost_per_hour = 200000
     cost = (duration / 3600) * cost_per_hour
     cost = cost * 1.02 if is_holyday() else cost
@@ -57,8 +58,8 @@ class Price(APIView):
         if not is_tehran(origin) or not is_tehran(destination):
             return Response('The origin or destination is not in Tehran!')
         duration = find_duration(origin, destination)
-        cost = calculate_cost(duration)
-        return Response({'price':cost})
+        cost = calculate_cost(origin, destination)
+        return Response({'price':cost, 'duration':str(datetime.timedelta(seconds=int(duration)))})
 
 
 class Signup(APIView):
@@ -102,3 +103,33 @@ class GroupsList(generics.ListAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
+
+class AddOrder(APIView):
+    permission_classes = [IsAuthenticated, IsCustomer]
+    def post(self, request):
+
+        # Checking data validation
+        data = request.data
+        if len(data.get('origin', [])) != 2:
+            return Response({'Origin':'This field should be a list of lat, long'})
+        if len(data.get('destination', [])) != 2:
+            return Response({'destination':'This field should be a list of lat, long'})
+        if not is_tehran(data['origin']) or not is_tehran(data['destination']):
+            return Response('The origin or destination is not in Tehran!')
+        
+        # completing data
+        data['cost'] = calculate_cost(data['origin'], data['destination'])
+        duration = find_duration(data['origin'], data['destination'])
+        duration = str(datetime.timedelta(seconds=int(duration)))
+        data['duration'] = duration
+        data['customer'] = request.user.id
+        data['origin'] = ','.join(data['origin'])
+        data['destination'] = ','.join(data['destination'])
+
+        # saving data
+        serializer = OrderSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response('Order succesfully created!', status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors)

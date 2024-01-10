@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import Price, Signup, GroupsList
+from .views import Price, Signup, GroupsList, AddOrder
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 urlpatterns=[
@@ -9,4 +9,5 @@ urlpatterns=[
     path('token/verify/', TokenVerifyView.as_view()),
     path('login/', TokenObtainPairView.as_view()),
     path('token/refresh/', TokenRefreshView.as_view()),
+    path('addorder', AddOrder.as_view()),
 ]
