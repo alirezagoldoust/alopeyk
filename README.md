@@ -63,7 +63,7 @@ description, has_return are optional
 ### My orders
 this request requires Athentication, returns all of your orders
 ```
-(get):api/ordrer/
+(get):api/order/
 ```
 if you pass query parameter 'active=true' it returns only the active order
 ### Cancel order
