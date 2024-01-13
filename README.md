@@ -3,7 +3,7 @@ This project is API of [Alopeyk.com](https://alopeyk.com/) website
 please turn off your VPN befor use!
 ## How to use:
 ### Creating account
-you should give a username, password, group_id(defualt is 1 = Customer, and 2 = Driver_applied) in requeset body, then it returns a token
+you should give a username, password, group_id(defualt is 1 = Customer, and 2 = Driver_applied) in request body, then it returns a token
 ```
 (post):api/signup/
 
