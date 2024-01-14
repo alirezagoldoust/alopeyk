@@ -1,5 +1,6 @@
 env/
 db.sqlite3
+db.sqbpro
 file.py
 todo.txt
 file3.py
