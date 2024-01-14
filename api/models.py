@@ -39,8 +39,14 @@ class Order(models.Model):
     has_return = models.BooleanField(default = False)
     driver = models.ForeignKey(User, on_delete=models.PROTECT, null = True, related_name='driver')
     payment = models.CharField(max_length=50, choices=[('0', 'not paid'), ('1', 'online paid')], default='0')
+
     def __str__(self) -> str:
         return f"{self.customer.username} {self.id}"
+
+    def distance(self, point):
+        point = list(map(float, point))
+        origin = list(map(float, self.origin.split(',')))
+        return (origin[0] - point[0])**2 + (origin[1] - point[1])**2
 
 
 class Feedback(models.Model):

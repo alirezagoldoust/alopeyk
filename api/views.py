@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User, Group
+from django.db.models import Func
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -198,6 +199,7 @@ class FeedbackView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated, IsCustomer]
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
+
 
 class OrderList(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsDriver]
