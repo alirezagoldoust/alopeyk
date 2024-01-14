@@ -5,8 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
-from .serializer import UserSerializer, GroupSerializer, ProfileSerializer, OrderSerializer
-from .models import ApiKey, Order
+from .serializer import UserSerializer, GroupSerializer, ProfileSerializer, OrderSerializer, FeedbackSerializer
+from .models import ApiKey, Order, Feedback
 from .permissions import IsDriver, IsCustomer, IsCustomerOrDriver
 import requests
 import datetime
@@ -66,10 +66,14 @@ class Signup(APIView):
     # This view will perform signup
     def post(self, request):
         data = request.data
+        if not data.get('groups'):
+            data['groups'] = [1]
         serializer = UserSerializer(data=data)
         if serializer.is_valid():
-            if len(data['groups']) > 1:
+            if len(data['groups']) != 1:
                 return Response('The user should belong to one group!')
+            if data['groups'][0] > 2:
+                return Response({"groups":"invalid group id"})
             user = serializer.save()
 
             # updating saved raw password to hashed password
@@ -100,7 +104,7 @@ class Signup(APIView):
 
 class GroupsList(generics.ListAPIView):
     # returns the name and id of all groups of users
-    queryset = Group.objects.all()
+    queryset = Group.objects.exclude(name__in=['Driver', 'Admin'])
     serializer_class = GroupSerializer
 
 
@@ -122,6 +126,9 @@ class AddOrder(APIView):
         # completing data
         data['cost'] = calculate_cost(data['origin'], data['destination'])
         duration = find_duration(data['origin'], data['destination'])
+        if data.get('has_return', False):
+            duration += find_duration(data['destination'], data['origin'])
+            data['cost'] += calculate_cost(data['destination'], data['origin'])
         duration = str(datetime.timedelta(seconds=int(duration)))
         data['duration'] = duration
         data['customer'] = request.user.id
@@ -139,15 +146,20 @@ class AddOrder(APIView):
 
 class CancelOrder(APIView):
     permission_classes = [IsAuthenticated, IsCustomerOrDriver]
-    def post(self, request):
+    def delete(self, request):
+        # the view automatically finds out the the user is customer or driver and cancels corresponding order, so it's a bit dirty :\
         if request.user.groups.all()[0].name == 'Customer':
             try:
-                order = Order.objects.get(customer=request.user, status__in=['0', '1', '2'])
+                order = Order.objects.get(customer=request.user, status='0')
                 order.status = '-1'
                 order.save()
                 return Response("The order successfully canceled")
             except:
-                return Response("You don't have any active order!")
+                try:
+                    order = Order.objects.get(customer=request.user, status__in=['1', '2', '3'])
+                    return Response("You can't cancel in process order!")
+                except:
+                    return Response("You don't have any active order!")
         else:
             try:
                 order = Order.objects.get(driver=request.user, status__in=['0', '1', '2'])
@@ -155,7 +167,39 @@ class CancelOrder(APIView):
                 order.save()
                 return Response("The order successfully canceled")
             except:
+                try:
+                    order = Order.objects.get(customer=request.user, status__in=['1', '2', '3'])
+                    return Response("You can't cancel in process order!")
+                except:
+                    return Response("You don't have any active order!")
+
+
+class MyOrder(APIView):
+    permission_classes = [IsAuthenticated, IsCustomerOrDriver]
+    def get(self, request): 
+        is_active = request.GET.get('active')
+        status_list = ['0', '1', '2', '3', '-1', '-2']
+
+        # returns all of the orders of a user and the active one if the 'active=true' comes in query prams
+        if is_active == 'true':
+            status_list = status_list[:3]
+        if request.user.groups.all()[0].name == 'Customer':
+            try:
+                return Response(OrderSerializer(Order.objects.filter(customer=request.user, status__in=status_list).order_by('-status'), many=True).data)
+            except:
+                return Response("You don't have any active order!")
+        else:
+            try:
+                return Response(OrderSerializer(Order.objects.filter(driver=request.user, status__in=status_list).order_by('-status'), many=True).data)
+            except:
                 return Response("You don't have any active order!")
 
+class FeedbackView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated, IsCustomer]
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
 
-   
+class OrderList(generics.ListAPIView):
+    permission_classes = [IsAuthenticated, IsDriver]
+    queryset = Order.objects.filter(status='0')
+    serializer_class = OrderSerializer

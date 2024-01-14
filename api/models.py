@@ -40,5 +40,9 @@ class Order(models.Model):
     driver = models.ForeignKey(User, on_delete=models.PROTECT, null = True, related_name='driver')
     payment = models.CharField(max_length=50, choices=[('0', 'not paid'), ('1', 'online paid')], default='0')
     def __str__(self) -> str:
-        return self.customer.username
-    
+        return f"{self.customer.username} {self.id}"
+
+
+class Feedback(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE)
+    rate = models.PositiveIntegerField(choices=[(0, 0), (1, 1), (2, 2), (3, 3), (4, 4), (5, 5)])
