@@ -20,6 +20,7 @@ group key is primary key of the group that the new user belongs to. the list of 
 (get):/api/groups/
 ```
 age, email and sex(f/m) are optional<br>
+driver applied users become Driver when admins accept their apply
 ### Login
 you can take token of the you user if lost with entering username and password in request body
 ```
@@ -82,3 +83,12 @@ body:
 }
 ```
 <br> you can get id of a order in previous request
+### Order list
+this request requires Athentication, drivers can see open orders from customers sorted by their distance.
+```
+(get):api/order/list/
+body:
+{
+    "position" : [lat, long]
+}
+```
