@@ -30,7 +30,7 @@ class Order(models.Model):
     duration = models.DurationField()
     status = models.CharField(max_length=20, choices=[('0','initial'), 
                                                       ('1', 'driver accepted'),
-                                                      ('2', 'driver arrived to origin'),
+                                                      ('2', 'driver arrived to origin and recieved the box'),
                                                       ('3', 'delivered'),
                                                       ('-1', 'canceled from user'),
                                                       ('-2', 'canceled from driver')], default='0')
@@ -47,6 +47,7 @@ class Order(models.Model):
         point = list(map(float, point))
         origin = list(map(float, self.origin.split(',')))
         return (origin[0] - point[0])**2 + (origin[1] - point[1])**2
+    
 
 
 class Feedback(models.Model):

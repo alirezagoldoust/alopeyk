@@ -163,13 +163,13 @@ class CancelOrder(APIView):
                     return Response("You don't have any active order!")
         else:
             try:
-                order = Order.objects.get(driver=request.user, status__in=['0', '1', '2'])
-                order.status = '-2'
+                order = Order.objects.get(driver=request.user, status='1')
+                order.status = '0'
                 order.save()
                 return Response("The order successfully canceled")
             except:
                 try:
-                    order = Order.objects.get(customer=request.user, status__in=['1', '2', '3'])
+                    order = Order.objects.get(customer=request.user, status__in=['2', '3'])
                     return Response("You can't cancel in process order!")
                 except:
                     return Response("You don't have any active order!")
@@ -201,7 +201,27 @@ class FeedbackView(generics.CreateAPIView):
     serializer_class = FeedbackSerializer
 
 
-class OrderList(generics.ListAPIView):
+
+class OrderList(APIView):
     permission_classes = [IsAuthenticated, IsDriver]
-    queryset = Order.objects.filter(status='0')
-    serializer_class = OrderSerializer
+
+    def get(self, request):
+        #Checking position input
+        driver_postion = request.data.get('position', [])
+        if len(driver_postion) != 2:
+            return Response({'position' : 'This field is should take lat and long!'})
+
+        # Getting data from database and sorting it on distance from driver position
+        orderlist = OrderSerializer(Order.objects.filter(status='0'), many=True).data
+        def distance_sort_key(order):
+            origin = list(map(float, order['origin'].split(',')))
+            position = list(map(float, driver_postion))
+            return (origin[0] - position[0])**2 + (origin[1] - position[1])**2
+        sorted_orderlist = sorted(orderlist, key=distance_sort_key, reverse=True)
+
+        return Response(sorted_orderlist)
+
+
+
+
+
