@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User, Group
-from django.db.models import Func
+from django.db.models import Avg
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -138,16 +138,14 @@ class AddOrder(APIView):
 
         # saving data
         serializer = OrderSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response('Order succesfully created!', status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response('Order succesfully created!', status=status.HTTP_200_OK)
 
 
 class CancelOrder(APIView):
     permission_classes = [IsAuthenticated, IsCustomerOrDriver]
-    def delete(self, request):
+    def patch(self, request):
         # the view automatically finds out the the user is customer or driver and cancels corresponding order, so it's a bit dirty :\
         if request.user.groups.all()[0].name == 'Customer':
             try:
@@ -165,11 +163,12 @@ class CancelOrder(APIView):
             try:
                 order = Order.objects.get(driver=request.user, status='1')
                 order.status = '0'
+                order.driver = None
                 order.save()
                 return Response("The order successfully canceled")
             except:
                 try:
-                    order = Order.objects.get(customer=request.user, status__in=['2', '3'])
+                    order = Order.objects.get(driver=request.user, status='2')
                     return Response("You can't cancel in process order!")
                 except:
                     return Response("You don't have any active order!")
@@ -185,21 +184,34 @@ class MyOrder(APIView):
         if is_active == 'true':
             status_list = status_list[:3]
         if request.user.groups.all()[0].name == 'Customer':
-            try:
-                return Response(OrderSerializer(Order.objects.filter(customer=request.user, status__in=status_list).order_by('-status'), many=True).data)
-            except:
-                return Response("You don't have any active order!")
+            orders = Order.objects.filter(customer=request.user, status__in=status_list).order_by('-status')
         else:
-            try:
-                return Response(OrderSerializer(Order.objects.filter(driver=request.user, status__in=status_list).order_by('-status'), many=True).data)
-            except:
-                return Response("You don't have any active order!")
+            orders = Order.objects.filter(driver=request.user, status__in=status_list).order_by('-status')
+        if orders.count():
+            return Response(OrderSerializer(orders, many=True).data)
+        return Response("You don't have any active order!")
 
 class FeedbackView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated, IsCustomer]
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        data['customer'] = request.user.id
+        serializer = self.get_serializer(data=data)
 
+        # Data validation
+        serializer.is_valid(raise_exception=True)
+        order = Order.objects.filter(id=data['order'], customer=request.user)
+        if not order.count():
+            return  Response("You don't have order with this id!")
+        if order[0].status != '3':
+            return  Response("Order has not finished yet!")
+
+        # Saving data
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response("Feedback successfully saved")
 
 
 class OrderList(APIView):
@@ -216,12 +228,58 @@ class OrderList(APIView):
         def distance_sort_key(order):
             origin = list(map(float, order['origin'].split(',')))
             position = list(map(float, driver_postion))
-            return (origin[0] - position[0])**2 + (origin[1] - position[1])**2
-        sorted_orderlist = sorted(orderlist, key=distance_sort_key, reverse=True)
+            res = (origin[0] - position[0])**2 + (origin[1] - position[1])**2
+            print(order['id'], res)
+            return res
+        sorted_orderlist = sorted(orderlist, key=distance_sort_key)
 
         return Response(sorted_orderlist)
 
 
+class AcceptOrder(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated, IsDriver]
+    queryset = Order.objects.filter(status='0')
+    serializer_class = OrderSerializer
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        if Order.objects.filter(driver=request.user, status__in=['1', '2']):
+            return Response("You have an active order, you can't accept new one!")
 
+        # applying needed changes to the order
+        data = {'status':'1', 'driver':request.user.id}
+        serializer = self.get_serializer(self.get_object(), data=data, partial=partial)
+        if serializer.is_valid():
+            serializer.save()
+            return Response("Order succecfully accepted")
+        else:
+            return Response("Failed to accept order, any open order with this id not found!")
 
+class TookStuff(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated, IsDriver]
+    serializer_class = OrderSerializer
+    def update(self, request, *args, **kwargs):
+        try:
+            order=Order.objects.get(driver=request.user, status='1')
+            order.status = '2'
+            order.save()
+            return Response("Successfully took the stuff")
+        except:
+            return Response("You do'nt have any accepted order")
 
+class DeliverOrder(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated, IsDriver]
+    serializer_class = OrderSerializer
+    def update(self, request, *args, **kwargs):
+        try:
+            order=Order.objects.get(driver=request.user, status='2')
+            order.status = '3'
+            order.save()
+            return Response("Order succecfully delivered")
+        except:
+            return Response("You do'nt have any tooken stuff")
+
+class AverageFeedbackScore(APIView):
+    permission_classes = [IsAuthenticated, IsDriver]
+    def get(self, request):
+        avg_scores = Feedback.objects.filter(order__driver=request.user, order__status='3').aggregate(Avg('rate'))
+        return Response({"Average Score" : avg_scores['rate__avg']})

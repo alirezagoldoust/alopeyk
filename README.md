@@ -62,7 +62,7 @@ body:
 ```
 description, has_return are optional
 ### My orders
-this request requires Athentication, returns all of your orders
+this request requires Athentication, returns all of your previous orders
 ```
 (get):api/order/
 ```
@@ -91,4 +91,20 @@ body:
 {
     "position" : [lat, long]
 }
+```
+### Accept order
+this request requires Athentication, drivers can accept open(status = '0') orders
+```
+(patch):api/order/accept/< order_id >
+```
+### Taking stuff, delivering stuff
+this request requires Athentication, drivers can use it when needed.
+```
+(patch):api/order/tookstuff/
+(patch):api/order/delivered/
+```
+### Average score of a driver
+this request requires Athentication, drivers can use it to see average score that customers gave
+```
+(get):api/avgscore
 ```

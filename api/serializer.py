@@ -21,7 +21,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['id', 'customer', 'origin', 'destination', 'description', 'has_return', 'cost', 'duration', 'posting_time', 'status']
+        fields = ['id', 'customer', 'origin', 'destination', 'description', 'has_return', 'cost', 'duration', 'posting_time', 'status', 'driver']
 
 
 class FeedbackSerializer(serializers.ModelSerializer):
