@@ -1,0 +1,482 @@
+{
+	"info": {
+		"_postman_id": "94c52c3c-fb2b-4b0f-8d29-fad6b3926045",
+		"name": "alopeik",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31666915",
+		"_collection_link": "https://warped-station-351817.postman.co/workspace/kelassor~43aa14fa-cf30-4f24-bf27-a803479d9f38/collection/31666915-94c52c3c-fb2b-4b0f-8d29-fad6b3926045?action=share&source=collection_link&creator=31666915"
+	},
+	"item": [
+		{
+			"name": "signup",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"MashMamadali\",\r\n    \"password\": \"1234\",\r\n    \"phone_number\" : \"09111111111\"   \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/signup/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"signup",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "newcustomer",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "1234",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/login/?",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"login",
+						""
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cost",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/cost/?origin=35.73927601596092, 51.509555196439734&destination=35.71054254003288, 51.285196109513784",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"cost",
+						""
+					],
+					"query": [
+						{
+							"key": "origin",
+							"value": "35.73927601596092, 51.509555196439734"
+						},
+						{
+							"key": "destination",
+							"value": "35.71054254003288, 51.285196109513784"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add_order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"origin\" : [\"35.75019411613506\", \"51.28322697712252\"],\r\n    \"destination\" : [\"35.73156544666984\", \"51.381008953539585\"],\r\n    \"description\" : \"mahmoole bozorgo sangine\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/order/add/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"order",
+						"add",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cancel_order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/order/cancel/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"order",
+						"cancel",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "my_order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/order/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"order",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "feedback",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"order\" : 3,\r\n    \"rate\" : 5\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/order/feedback/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"order",
+						"feedback",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "order_list",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/order/list/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"order",
+						"list",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "accept_order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"status\" : \"1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/order/accept/15",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"order",
+						"accept",
+						"15"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "took_stuff",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/order/tookstuff/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"order",
+						"tookstuff",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "order_delivered",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"status\" : \"1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/order/accept/15",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"order",
+						"accept",
+						"15"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "average_score",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/avgscore/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"avgscore",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
