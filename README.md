@@ -2,6 +2,7 @@
 This project is API of [Alopeyk.com](https://alopeyk.com/) website
 please turn off your VPN befor use!
 ## How to use:
+in order to use the project better, befor use you can run "init.py" file too add a sample data to your database 
 ### Creating account
 you should give a username, password, group_id(defualt is 1 = Customer, and 2 = Driver_applied) in request body, then it returns a token
 ```
