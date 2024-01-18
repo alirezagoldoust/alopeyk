@@ -21,6 +21,4 @@ urlpatterns=[
     path('order/delivered/', DeliverOrder.as_view()),
     path('order/delivered/', DeliverOrder.as_view()),
     path('avgscore/', AverageFeedbackScore.as_view()),
-
-
 ]

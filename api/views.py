@@ -7,16 +7,18 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from .serializer import UserSerializer, GroupSerializer, ProfileSerializer, OrderSerializer, FeedbackSerializer
-from .models import ApiKey, Order, Feedback
+from .models import Order, Feedback
 from .permissions import IsDriver, IsCustomer, IsCustomerOrDriver
 import requests
 import datetime
+from dotenv import dotenv_values
+secrets = dotenv_values('.env')
 
 def is_tehran(location):
     lat = location[0]
     long = location[1]
     url = f'https://api.neshan.org/v5/reverse?lat={lat}&lng={long}'
-    api_key = ApiKey.objects.get(name='admin').apikey   
+    api_key = secrets['API_KEY']
     city = (requests.get(headers={'Api-key' : api_key}, url=url)).json()['city']
     if city == 'تهران':
         return True
@@ -26,7 +28,7 @@ def is_tehran(location):
 def find_duration(origin, destination):
     # This view takes origin and destination and returns the duration in seconds
     url = f'https://api.neshan.org/v4/direction?origin={origin[0]},{origin[1]}&destination={destination[0]},{destination[1]}&type=motorcycle'
-    api_key = ApiKey.objects.get(name='admin').apikey   
+    api_key = secrets['API_KEY']
     duration = (requests.get(headers={'Api-key' : api_key}, url=url)).json()['routes'][0]['legs'][0]['duration']['value']
     return duration
 
@@ -61,6 +63,12 @@ class Price(APIView):
         duration = find_duration(origin, destination)
         cost = calculate_cost(origin, destination)
         return Response({'price':cost, 'duration':str(datetime.timedelta(seconds=int(duration)))})
+
+
+
+class Test(APIView):
+    def get(self, request):
+        return Response(secrets)
 
 
 class Signup(APIView):
